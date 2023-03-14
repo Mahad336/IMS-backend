@@ -19,11 +19,11 @@ export class Role {
 
   @OneToMany(() => User, (user) => user.role)
   @JoinColumn({ name: 'role_id', referencedColumnName: 'id' })
-  user: User;
+  user?: User;
 
   @CreateDateColumn()
-  createdDate: Date;
+  createdDate?: Date;
 
   @UpdateDateColumn()
-  updatedDate: Date;
+  updatedDate?: Date;
 }

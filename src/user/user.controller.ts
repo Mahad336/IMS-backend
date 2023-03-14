@@ -33,7 +33,6 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(AuthGuard)
   findAll(@Req() req) {
     return this.userService.findAll();
   }

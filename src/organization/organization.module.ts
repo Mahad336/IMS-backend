@@ -10,5 +10,6 @@ import { UserModule } from 'src/user/user.module';
   imports: [TypeOrmModule.forFeature([Organization]), UserModule],
   controllers: [OrganizationController],
   providers: [OrganizationService, AuthMiddleware],
+  exports: [TypeOrmModule.forFeature([Organization])],
 })
 export class OrganizationModule {}

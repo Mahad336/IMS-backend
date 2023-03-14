@@ -1,5 +1,5 @@
-import { Role } from 'src/role/entities/role.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Request } from 'src/request/entities/request.entity';
 import {
   Entity,
   Column,
@@ -9,6 +9,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
+import { Complaint } from 'src/complaint/entities/complaint.entity';
 
 @Entity()
 export class Organization {
@@ -45,11 +46,15 @@ export class Organization {
   @Column()
   representativeContact: string;
 
-  @OneToMany(() => User, (user) => user.organization, {
-    eager: true,
-  })
+  @OneToMany(() => User, (user) => user.organization)
   @JoinColumn({ name: 'organization_id', referencedColumnName: 'id' })
-  user: User;
+  user?: User;
+
+  @OneToMany(() => Request, (request) => request.organization)
+  requests?: Request[];
+
+  @OneToMany(() => Complaint, (complaint) => complaint.organization)
+  complaints?: Complaint[];
 
   @CreateDateColumn()
   createdDate: Date;

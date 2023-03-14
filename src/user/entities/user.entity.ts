@@ -7,9 +7,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 import { Organization } from 'src/organization/entities/organization.entity';
+import { Request } from 'src/request/entities/request.entity';
+import { Complaint } from 'src/complaint/entities/complaint.entity';
 
 @Entity()
 export class User {
@@ -57,6 +60,12 @@ export class User {
 
   @ManyToOne(() => Organization, (organization) => organization.user)
   organization: Organization;
+
+  @OneToMany(() => Request, (request) => request.submittedBy)
+  requests?: Request[];
+
+  @OneToMany(() => Complaint, (complaint) => complaint.submittedBy)
+  complaints?: Complaint[];
 
   @CreateDateColumn()
   createdDate: Date;
