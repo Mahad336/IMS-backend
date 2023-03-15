@@ -5,7 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { generateToken } from 'src/utils/generateJWT';
+import { generateToken } from 'src/common/utils/generateJWT';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

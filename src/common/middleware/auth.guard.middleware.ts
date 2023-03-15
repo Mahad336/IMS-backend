@@ -1,6 +1,8 @@
 import {
   Injectable,
   NestMiddleware,
+  CanActivate,
+  ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
@@ -11,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
-export class AuthMiddleware implements NestMiddleware {
+export class AuthGuardMiddleware implements NestMiddleware, CanActivate {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private configService: ConfigService,
@@ -29,7 +31,6 @@ export class AuthMiddleware implements NestMiddleware {
           where: { id: decodedToken.id },
         });
         req['user'] = user;
-        res.locals.user = user;
         next();
       } else {
         next();
@@ -39,5 +40,20 @@ export class AuthMiddleware implements NestMiddleware {
       console.log(error.message);
       throw new UnauthorizedException();
     }
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
+
+    return new Promise<boolean>((resolve, reject) => {
+      this.use(request, response, (err?: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      });
+    });
   }
 }

@@ -13,14 +13,14 @@ import {
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
-import { AuthGuard } from 'src/middleware/auth.guard';
+import { AuthGuardMiddleware } from 'src/common/middleware/auth.guard.middleware';
 
 @Controller('organization')
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuardMiddleware)
   create(
     @Body() createOrganizationDto: CreateOrganizationDto,
     @Req() req: any,

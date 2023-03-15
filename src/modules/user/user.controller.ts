@@ -14,7 +14,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { AuthGuard } from 'src/middleware/auth.guard';
+import { AuthGuardMiddleware } from 'src/common/middleware/auth.guard.middleware';
 
 @Controller('user')
 export class UserController {
@@ -33,7 +33,7 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuardMiddleware)
   findAll(@Req() req) {
     return this.userService.findAll();
   }
