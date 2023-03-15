@@ -1,9 +1,8 @@
 import * as jwt from 'jsonwebtoken';
-//import config from '../config/keys';
-require('dotenv').config();
+import { ConfigService } from '@nestjs/config';
 
-const generateToken = (id: string) => {
-  return jwt.sign({ id }, process.env.secretKey, {
+const generateToken = (id: string, configService: ConfigService) => {
+  return jwt.sign({ id }, configService.get(<string>'secretKey'), {
     expiresIn: '2d',
   });
 };
