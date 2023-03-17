@@ -28,19 +28,6 @@ export class UserService {
     return savedUser;
   }
 
-  //login
-
-  async login(body: User, res: any): Promise<User> {
-    const { email, password } = body;
-    const userExists = await this.userRepository.findOneBy({ email });
-
-    if (userExists && (await bcrypt.compare(password, userExists.password))) {
-      const token = generateToken(String(userExists.id), this.configService);
-      res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
-      return userExists;
-    }
-  }
-
   findAll() {
     return this.userRepository.find();
   }

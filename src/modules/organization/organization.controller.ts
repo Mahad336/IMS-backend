@@ -13,7 +13,7 @@ import {
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
-import { AuthGuardMiddleware } from 'src/common/middleware/auth.guard.middleware';
+import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 
 @Controller('organization')
 export class OrganizationController {
@@ -30,6 +30,7 @@ export class OrganizationController {
   }
 
   @Get()
+  @UseGuards(AuthGuardMiddleware)
   findAll() {
     return this.organizationService.findAll();
   }

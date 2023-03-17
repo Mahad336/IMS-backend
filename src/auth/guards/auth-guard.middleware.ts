@@ -30,6 +30,7 @@ export class AuthGuardMiddleware implements NestMiddleware, CanActivate {
         let user = await this.userRepository.findOne({
           where: { id: decodedToken.id },
         });
+        console.log(user);
         req['user'] = user;
         next();
       } else {

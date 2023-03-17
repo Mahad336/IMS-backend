@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePasswordResetDto } from './dto/create-password-reset.dto';
-import { UpdatePasswordResetDto } from './dto/update-password-reset.dto';
 import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { generateToken } from 'src/common/utils/generateJWT';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class PasswordResetService {
+export class AuthService {
   private transporter: nodemailer.Transporter;
 
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private configService: ConfigService,
   ) {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -87,5 +88,18 @@ export class PasswordResetService {
 
     console.log(`Password reset successfully for ${email}`);
     return changedUser;
+  }
+
+  //login
+
+  async login(body: User, res: any): Promise<User> {
+    const { email, password } = body;
+    const userExists = await this.userRepository.findOneBy({ email });
+
+    if (userExists && (await bcrypt.compare(password, userExists.password))) {
+      const token = generateToken(String(userExists.id), this.configService);
+      res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
+      return userExists;
+    }
   }
 }

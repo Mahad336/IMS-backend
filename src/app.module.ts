@@ -13,6 +13,7 @@ import { ItemModule } from './modules/item/item.module';
 import { ConfigModule } from '@nestjs/config';
 import { ComplaintModule } from './modules/complaint/complaint.module';
 import { ConfigService } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 import getConfig from './config/ormconfig';
 
 @Module({
@@ -31,6 +32,7 @@ import getConfig from './config/ormconfig';
     RequestModule,
     ItemModule,
     ComplaintModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

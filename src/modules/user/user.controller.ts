@@ -14,7 +14,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { AuthGuardMiddleware } from 'src/common/middleware/auth.guard.middleware';
+import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 
 @Controller('user')
 export class UserController {
@@ -23,12 +23,6 @@ export class UserController {
   @Post()
   async create(@Body() createUserDto: CreateUserDto, @Res() res: any) {
     const user = await this.userService.create(createUserDto, res);
-    res.send({ user });
-  }
-
-  @Post('/login')
-  async login(@Body() body: User, @Res() res: any) {
-    const user = await this.userService.login(body, res);
     res.send({ user });
   }
 
