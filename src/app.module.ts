@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { RoleModule } from './modules/role/role.module';
-import { PasswordResetModule } from './modules/password-reset/password-reset.module';
 import { CategoryModule } from './modules/category/category.module';
 import { VendorModule } from './modules/vendor/vendor.module';
 import { RequestModule } from './modules/request/request.module';
@@ -26,7 +26,6 @@ import getConfig from './config/ormconfig';
     UserModule,
     OrganizationModule,
     RoleModule,
-    PasswordResetModule,
     CategoryModule,
     VendorModule,
     RequestModule,
@@ -35,6 +34,15 @@ import getConfig from './config/ormconfig';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        transform: true,
+        whitelist: true,
+      }),
+    },
+  ],
 })
 export class AppModule {}

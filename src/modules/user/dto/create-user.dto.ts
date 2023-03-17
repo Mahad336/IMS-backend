@@ -2,7 +2,6 @@ import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { Role } from 'src/modules/role/entities/role.entity';
 import { Organization } from 'src/modules/organization/entities/organization.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Request } from 'src/modules/request/entities/request.entity';
 
 export class CreateUserDto {
   @ApiProperty()
@@ -12,8 +11,8 @@ export class CreateUserDto {
   @IsString()
   readonly name: string;
 
-  @ApiProperty()
   @IsEmail()
+  @IsString()
   readonly email: string;
 
   @ApiProperty()
@@ -33,7 +32,7 @@ export class CreateUserDto {
   @IsString()
   readonly contact: string;
 
-  @ApiProperty()
+  @IsString()
   readonly image: string;
 
   @ApiProperty({ required: false })

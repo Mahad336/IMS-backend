@@ -36,11 +36,17 @@ export class UserService {
     return await this.userRepository.findOne({ where: { id } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOneBy({ id });
+    const genSalt = await bcrypt.genSalt();
+    return await this.userRepository.save({
+      ...user,
+      ...updateUserDto,
+      password: await bcrypt.hash(user.password, genSalt),
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    return await this.userRepository.delete({ id });
   }
 }
