@@ -30,7 +30,6 @@ export class OrganizationController {
   }
 
   @Get()
-  @UseGuards(AuthGuardMiddleware)
   findAll() {
     return this.organizationService.findAll();
   }

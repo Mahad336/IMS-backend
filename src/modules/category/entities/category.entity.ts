@@ -1,11 +1,8 @@
-// Category.entity.ts
-
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   ManyToMany,
-  JoinTable,
   ManyToOne,
   JoinColumn,
   OneToMany,

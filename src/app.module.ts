@@ -14,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ComplaintModule } from './modules/complaint/complaint.module';
 import { ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { AbilityModule } from './modules/ability/ability.module';
 import getConfig from './config/ormconfig';
 
 @Module({
@@ -32,6 +33,7 @@ import getConfig from './config/ormconfig';
     ItemModule,
     ComplaintModule,
     AuthModule,
+    AbilityModule,
   ],
   controllers: [AppController],
   providers: [
@@ -40,7 +42,6 @@ import getConfig from './config/ormconfig';
       provide: APP_PIPE,
       useValue: new ValidationPipe({
         transform: true,
-        whitelist: true,
       }),
     },
   ],

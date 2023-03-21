@@ -55,10 +55,18 @@ export class User {
   @Column({ nullable: true })
   totalExperience?: number;
 
-  @ManyToOne(() => Role, (role) => role.user)
+  @Column({ nullable: true })
+  roleId: number;
+
+  @ManyToOne(() => Role, (role) => role.user, { eager: true })
   role: Role;
 
-  @ManyToOne(() => Organization, (organization) => organization.user)
+  @Column({ nullable: true })
+  organizationId: number;
+
+  @ManyToOne(() => Organization, (organization) => organization.user, {
+    eager: true,
+  })
   organization: Organization;
 
   @OneToMany(() => Request, (request) => request.submittedBy)

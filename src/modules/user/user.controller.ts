@@ -17,6 +17,10 @@ import { UserValidator } from './validators/user.validator';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { ParseIntPipe } from '@nestjs/common';
 import { validate } from 'class-validator';
+import { CheckAblities } from '../ability/decorators/abilities.decorators';
+import { Action } from '../ability/ability.factory';
+import { User } from './entities/user.entity';
+import { AbilitiesGuard } from '../ability/guards/abilities.guard';
 
 @Controller('user')
 export class UserController {
@@ -37,9 +41,10 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(AuthGuardMiddleware)
+  @CheckAblities({ action: Action.Read, subject: User })
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
   findAll(@Req() req) {
-    return this.userService.findAll();
+    return this.userService.findAll(req);
   }
 
   @Get(':id')
@@ -48,12 +53,14 @@ export class UserController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuardMiddleware)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
+    @Req() req: any,
   ) {
     await this.userValidator.validateUpdateUserDto(+id, updateUserDto);
-    return this.userService.update(+id, updateUserDto);
+    return this.userService.update(+id, updateUserDto, req);
   }
 
   @Delete(':id')
