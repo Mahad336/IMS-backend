@@ -23,13 +23,16 @@ export class Complaint {
   @Column()
   suggestion: string;
 
+  @Column({ nullable: true, type: 'text', array: true })
+  attachments?: string[];
+
   @CreateDateColumn()
   submissionDate: Date;
 
   @ManyToOne(() => User, (user) => user.complaints)
   submittedBy: User; // foreign key to User entity
 
-  @Column()
+  @Column({ default: 'pending' })
   status: string;
 
   @ManyToOne(() => Organization, (organization) => organization.complaints)

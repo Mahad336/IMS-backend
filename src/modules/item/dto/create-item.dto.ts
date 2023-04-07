@@ -4,10 +4,12 @@ import {
   IsOptional,
   IsDateString,
   ValidateNested,
+  IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto';
 import { CreateVendorDto } from 'src/modules/vendor/dto/create-vendor.dto';
+import { Organization } from 'src/modules/organization/entities/organization.entity';
 
 export class CreateItemDto {
   @IsString()
@@ -49,4 +51,7 @@ export class CreateItemDto {
   @ValidateNested()
   @Type(() => CreateVendorDto)
   vendor: CreateVendorDto;
+
+  @IsNotEmpty()
+  organization: Organization;
 }

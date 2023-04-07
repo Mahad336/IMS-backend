@@ -15,6 +15,7 @@ import { ComplaintModule } from './modules/complaint/complaint.module';
 import { ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { AbilityModule } from './modules/ability/ability.module';
+import { NestCloudinaryModule } from './nest-cloudinary/cloudinary.module';
 import getConfig from './config/ormconfig';
 
 @Module({
@@ -34,6 +35,7 @@ import getConfig from './config/ormconfig';
     ComplaintModule,
     AuthModule,
     AbilityModule,
+    NestCloudinaryModule,
   ],
   controllers: [AppController],
   providers: [

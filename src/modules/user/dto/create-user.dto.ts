@@ -62,6 +62,7 @@ export class CreateUserDto {
   readonly role: Role;
 
   @ApiProperty()
+  @IsOptional()
   readonly organization: Organization;
 
   @ApiProperty()

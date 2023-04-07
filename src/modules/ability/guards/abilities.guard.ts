@@ -24,7 +24,6 @@ export class AbilitiesGuard implements CanActivate {
       this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) ||
       [];
     const { user } = context.switchToHttp().getRequest();
-    console.log('user == > in role ', user);
     const ability = this.caslAbilityFactory.defineAbility(user);
 
     try {

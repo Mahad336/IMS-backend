@@ -1,15 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UploadedFiles,
+  UseInterceptors,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ComplaintService } from './complaint.service';
-import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { UpdateComplaintDto } from './dto/update-complaint.dto';
+import type { Multer } from 'multer';
+import { User } from '../user/entities/user.entity';
+import { Organization } from '../organization/entities/organization.entity';
 
 @Controller('complaint')
 export class ComplaintController {
   constructor(private readonly complaintService: ComplaintService) {}
 
   @Post()
-  create(@Body() createComplaintDto: CreateComplaintDto) {
-    return this.complaintService.create(createComplaintDto);
+  @UseInterceptors(FilesInterceptor('attachments'))
+  async create(
+    @Body() createComplaintDto,
+    @UploadedFiles() files,
+    @Body('submittedBy', ParseIntPipe) submittedBy: User,
+    @Body('organization', ParseIntPipe) organization: Organization,
+  ) {
+    const attachments = await this.complaintService.uploadFiles(files);
+
+    return this.complaintService.create({
+      ...createComplaintDto,
+      submittedBy,
+      organization,
+      attachments,
+    });
   }
 
   @Get()
@@ -23,7 +50,10 @@ export class ComplaintController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateComplaintDto: UpdateComplaintDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateComplaintDto: UpdateComplaintDto,
+  ) {
     return this.complaintService.update(+id, updateComplaintDto);
   }
 

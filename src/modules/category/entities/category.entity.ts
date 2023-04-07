@@ -6,9 +6,11 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  JoinTable,
 } from 'typeorm';
 import { Vendor } from 'src/modules/vendor/entities/vendor.entity';
 import { Item } from 'src/modules/item/entities/item.entity';
+import { Organization } from 'src/modules/organization/entities/organization.entity';
 
 @Entity()
 export class Category {
@@ -31,7 +33,11 @@ export class Category {
   subcategories: Category[];
 
   @ManyToOne(() => Item, (item) => item.category)
-  item: Item;
+  item?: Item;
+
+  @ManyToOne(() => Organization, (organization) => organization.category)
+  @JoinColumn({ name: 'organizationId' })
+  organization: Organization;
 
   @ManyToMany(() => Vendor)
   vendors: Vendor[];

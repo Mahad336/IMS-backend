@@ -10,6 +10,7 @@ import {
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Vendor } from 'src/modules/vendor/entities/vendor.entity';
 import { Request } from 'src/modules/request/entities/request.entity';
+import { Organization } from 'src/modules/organization/entities/organization.entity';
 
 @Entity()
 export class Item {
@@ -54,6 +55,10 @@ export class Item {
   @ManyToOne(() => Vendor, (vendor) => vendor.item)
   @JoinColumn({ name: 'vendor_id' })
   vendor: Vendor;
+
+  @ManyToOne(() => Organization, (organization) => organization.category)
+  @JoinColumn({ name: 'organizationId' })
+  organization: Organization;
 
   @OneToMany(() => Request, (request) => request.item)
   requests: Request[];

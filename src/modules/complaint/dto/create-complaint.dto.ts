@@ -4,6 +4,7 @@ import {
   IsDate,
   IsNumber,
   IsOptional,
+  IsArray,
 } from 'class-validator';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Organization } from 'src/modules/organization/entities/organization.entity';
@@ -25,6 +26,8 @@ export class CreateComplaintDto {
   @IsNotEmpty()
   @IsNumber()
   submittedBy: User; // foreign key to User entity
+
+  attachments?: any;
 
   @IsOptional()
   @IsString()

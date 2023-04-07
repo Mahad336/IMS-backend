@@ -59,6 +59,7 @@ export class User {
   roleId: number;
 
   @ManyToOne(() => Role, (role) => role.user, { eager: true })
+  @JoinColumn({ name: 'roleId' })
   role: Role;
 
   @Column({ nullable: true })
@@ -67,6 +68,7 @@ export class User {
   @ManyToOne(() => Organization, (organization) => organization.user, {
     eager: true,
   })
+  @JoinColumn({ name: 'organizationId' })
   organization: Organization;
 
   @OneToMany(() => Request, (request) => request.submittedBy)
