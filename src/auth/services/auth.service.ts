@@ -54,7 +54,7 @@ export class AuthService {
     }
   }
 
-  async resetPassword(email: string, otp: string, newPassword: string) {
+  async validateOtp(email: string, otp: string) {
     const user = await this.userRepository.findOne({ where: { email } });
 
     if (!user) {
@@ -74,20 +74,33 @@ export class AuthService {
       throw new Error(`No OTP found for user with email ${email}`);
     }
 
-    const isOtpValid = await bcrypt.compare(String(otp), hashedOtp);
+    const isOtpValid = await bcrypt.compare(otp, hashedOtp);
 
     if (!isOtpValid) {
       throw new Error(`Invalid OTP`);
     }
 
+    // generate a JWT token and return it
+    const payload = { id: String(user.id), role: user.role };
+    const token = generateToken(payload, this.configService);
+    return token;
+  }
+
+  async updatePassword(userId: number, newPassword: string): Promise<any> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
-    user.passwordResetOtp = null;
-    user.passwordResetExpiration = null;
-    const changedUser = await this.userRepository.save(user);
+    const updatedUser = await this.userRepository.save(user);
 
-    console.log(`Password reset successfully for ${email}`);
-    return changedUser;
+    console.log(`Password updated successfully for user with ID ${userId}`);
+    user.passwordResetExpiration = null;
+    user.passwordResetOtp = null;
+    return updatedUser;
   }
 
   //login
@@ -97,7 +110,8 @@ export class AuthService {
 
     const userExists = await this.userRepository.findOneBy({ email });
     if (userExists && (await bcrypt.compare(password, userExists.password))) {
-      const token = generateToken(String(userExists.id), this.configService);
+      const payload = { id: String(userExists.id), role: userExists.role };
+      const token = generateToken(payload, this.configService);
       res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
       return userExists;
     }

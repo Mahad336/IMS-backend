@@ -1,8 +1,12 @@
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
+import { Role } from 'src/modules/role/entities/role.entity';
 
-const generateToken = (id: string, configService: ConfigService) => {
-  return jwt.sign({ id }, configService.get(<string>'secretKey'), {
+const generateToken = (
+  payload: { id: string; role: Role },
+  configService: ConfigService,
+) => {
+  return jwt.sign(payload, configService.get(<string>'secretKey'), {
     expiresIn: '2d',
   });
 };

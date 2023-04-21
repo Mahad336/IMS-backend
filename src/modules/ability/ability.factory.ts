@@ -51,7 +51,7 @@ export class AbilityFactory {
     );
 
     // Super Admin abilities
-    if (user.role.name == UserRole.SUPER_ADMIN) {
+    if (user?.role?.name == UserRole.SUPER_ADMIN) {
       can(Action.Manage, 'all');
     }
 

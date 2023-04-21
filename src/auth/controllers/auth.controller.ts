@@ -1,8 +1,17 @@
-import { Controller, Post, Body, Param, Put } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { UserService } from 'src/modules/user/user.service';
-import { User } from 'src/modules/user/entities/user.entity';
-import { Res } from '@nestjs/common';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { Res, Req } from '@nestjs/common';
+import { AuthGuardMiddleware } from '../guards/auth-guard.middleware';
 
 @Controller('auth')
 export class AuthController {
@@ -11,22 +20,58 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
-  @Post('password-reset/:email')
-  sendResetPasswordEmail(@Param('email') email: string) {
+  @Post('reset-password/generate-otp')
+  sendResetPasswordEmail(@Body('email') email: string) {
     return this.authService.sendResetPasswordEmail(email);
   }
 
-  @Put('password-reset/:email')
-  async resetPassword(
-    @Param('email') email: string,
-    @Body() { otp, newPassword }: { otp: string; newPassword: string },
+  @Post('reset-password/validate-otp')
+  async validateOtp(
+    @Body('email') email: string,
+    @Body('otp') otp: string,
+    @Res() res: any,
   ) {
-    return await this.authService.resetPassword(email, otp, newPassword);
+    const token = await this.authService.validateOtp(email, otp);
+    res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
+    return res.send({ message: 'OTP validated Successfuly' });
+  }
+
+  @Put('reset-password/update-password')
+  @UseGuards(AuthGuardMiddleware)
+  async updatePassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @Req() req,
+    @Res() res,
+  ): Promise<any> {
+    const userId = req.user.id;
+    const { newPassword } = resetPasswordDto;
+    console.log(userId, newPassword);
+    await this.authService.updatePassword(userId, newPassword);
+    res.clearCookie('jwt');
+    return res.status(200).send({ message: 'Password updated successfully' });
   }
 
   @Post('/login')
   async login(@Body() body, @Res() res: any) {
     const user = await this.authService.login(body, res);
-    res.send({ user });
+    console.log(body);
+    res.send(user);
+  }
+
+  @Get('current-user')
+  @UseGuards(AuthGuardMiddleware)
+  findCurrentUser(@Req() req) {
+    console.log('okokkkokokkkk');
+    return req.user;
+  }
+
+  @Post('/logout')
+  @UseGuards(AuthGuardMiddleware)
+  async logout(@Res() res, @Req() req) {
+    const { jwt } = req.cookies;
+    if (jwt) {
+      res.clearCookie('jwt');
+    }
+    res.send({ message: 'Successfuly logged Out' });
   }
 }

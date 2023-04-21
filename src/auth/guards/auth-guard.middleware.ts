@@ -20,6 +20,7 @@ export class AuthGuardMiddleware implements NestMiddleware, CanActivate {
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
+    console.log(req.cookies);
     try {
       const token = req.cookies.jwt;
       if (token) {
@@ -38,7 +39,7 @@ export class AuthGuardMiddleware implements NestMiddleware, CanActivate {
         throw new UnauthorizedException();
       }
     } catch (error) {
-      console.log(error.message);
+      console.log('here=>', error.message);
       throw new UnauthorizedException();
     }
   }

@@ -25,7 +25,8 @@ export class UserService {
       password: await bcrypt.hash(user.password, genSalt),
     });
     const savedUser = await this.userRepository.save(newUser);
-    const token = generateToken(String(newUser.id), this.configService);
+    const payload = { id: String(savedUser.id), role: savedUser.role };
+    const token = generateToken(payload, this.configService);
     res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
 
     return savedUser;
