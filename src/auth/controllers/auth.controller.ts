@@ -45,7 +45,6 @@ export class AuthController {
   ): Promise<any> {
     const userId = req.user.id;
     const { newPassword } = resetPasswordDto;
-    console.log(userId, newPassword);
     await this.authService.updatePassword(userId, newPassword);
     res.clearCookie('jwt');
     return res.status(200).send({ message: 'Password updated successfully' });
@@ -54,14 +53,13 @@ export class AuthController {
   @Post('/login')
   async login(@Body() body, @Res() res: any) {
     const user = await this.authService.login(body, res);
-    console.log(body);
     res.send(user);
   }
 
   @Get('current-user')
   @UseGuards(AuthGuardMiddleware)
   findCurrentUser(@Req() req) {
-    console.log('okokkkokokkkk');
+    console.log('current user hittedddddddddddddddddddd');
     return req.user;
   }
 

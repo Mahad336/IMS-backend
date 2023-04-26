@@ -26,7 +26,6 @@ export class AuthService {
 
   async sendResetPasswordEmail(email: string) {
     const user = await this.userRepository.findOne({ where: { email } });
-    console.log(user);
     if (!user) {
       throw new Error(`User with email ${email} not found`);
     }

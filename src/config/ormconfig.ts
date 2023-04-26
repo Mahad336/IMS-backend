@@ -30,6 +30,5 @@ export default async function getConfig(
       Complaint,
     ],
     synchronize: true,
-    logging: true,
   };
 }

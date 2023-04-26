@@ -9,6 +9,7 @@ import { generateToken } from 'src/common/utils/generateJWT';
 import { ConfigService } from '@nestjs/config';
 import { AbilityFactory, Action } from '../ability/ability.factory';
 import { ForbiddenError } from '@casl/ability';
+import { UserRole } from 'src/common/enums/user-role.enums';
 
 @Injectable()
 export class UserService {
@@ -45,7 +46,16 @@ export class UserService {
     //     throw new ForbiddenException(err.message);
     // }
 
-    return this.userRepository.find();
+    const userRole = req.user.role.name;
+    if (userRole === UserRole.SUPER_ADMIN) {
+      return this.userRepository.find({ where: { role: { name: 'admin' } } });
+    } else if (userRole === UserRole.ADMIN) {
+      return this.userRepository.find({
+        where: { role: { name: 'employee' } },
+      });
+    } else {
+      return this.userRepository.find({ where: { id: req.user.id } });
+    }
   }
 
   async findOne(id: number) {

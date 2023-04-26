@@ -20,7 +20,6 @@ export class AuthGuardMiddleware implements NestMiddleware, CanActivate {
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
-    console.log(req.cookies);
     try {
       const token = req.cookies.jwt;
       if (token) {

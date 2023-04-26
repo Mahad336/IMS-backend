@@ -27,7 +27,7 @@ export class Complaint {
   attachments?: string[];
 
   @CreateDateColumn()
-  submissionDate: Date;
+  createdDate: Date;
 
   @ManyToOne(() => User, (user) => user.complaints)
   submittedBy: User; // foreign key to User entity
