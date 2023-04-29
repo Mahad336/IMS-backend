@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { In, Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { Vendor } from './entities/vendor.entity';
@@ -29,9 +30,12 @@ export class VendorService {
     return await this.vendorRepository.save(newVendor);
   }
 
-  async findAll() {
+  async findAll(user: User) {
     return await this.vendorRepository.find({
-      relations: ['categories'],
+      relations: ['organization', 'categories', 'subcategories', 'items'],
+      where: {
+        organization: { id: user?.organization?.id },
+      },
     });
   }
 

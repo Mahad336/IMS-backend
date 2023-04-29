@@ -9,6 +9,7 @@ import {
   Res,
   UseGuards,
   Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,6 +22,7 @@ import { CheckAblities } from '../ability/decorators/abilities.decorators';
 import { Action } from '../ability/ability.factory';
 import { User } from './entities/user.entity';
 import { AbilitiesGuard } from '../ability/guards/abilities.guard';
+import { TransformUserDataInterceptor } from './interceptors/transform-user-data.interceptors';
 
 @Controller('user')
 export class UserController {
@@ -34,15 +36,15 @@ export class UserController {
     const errors = await validate(createUserDto);
     console.log('errors ==> ', errors);
     if (errors.length > 0) return 'Send Accurate Data';
-    console.log(createUserDto);
     await this.userValidator.validateCreateUserDto(createUserDto);
     const user = await this.userService.create(createUserDto, res);
     res.send({ user });
   }
 
   @Get()
-  @CheckAblities({ action: Action.Read, subject: User })
   @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Read, subject: User })
+  @UseInterceptors(TransformUserDataInterceptor)
   findAll(@Req() req) {
     return this.userService.findAll(req);
   }

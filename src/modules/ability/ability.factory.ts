@@ -62,7 +62,7 @@ export class AbilityFactory {
         organizationId: user.organization.id,
       });
       can(Action.Delete, [Item, Vendor, Category, Complaint]);
-      can(Action.Read, [Organization, Item, Vendor, Category, Complaint, User]);
+      can(Action.Read, [Organization, Item, Category, Complaint, User, Vendor]);
     }
 
     // Employee abilities

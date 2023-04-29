@@ -9,10 +9,12 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 import { Organization } from 'src/modules/organization/entities/organization.entity';
 import { Request } from 'src/modules/request/entities/request.entity';
 import { Complaint } from 'src/modules/complaint/entities/complaint.entity';
+import { Item } from 'src/modules/item/entities/item.entity';
 
 @Entity()
 export class User {
@@ -25,6 +27,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Exclude()
   @Column()
   password: string;
 
@@ -73,6 +76,9 @@ export class User {
 
   @OneToMany(() => Request, (request) => request.submittedBy)
   requests?: Request[];
+
+  @OneToMany(() => Item, (item) => item.assignedTo)
+  item?: Item[];
 
   @OneToMany(() => Complaint, (complaint) => complaint.submittedBy)
   complaints?: Complaint[];

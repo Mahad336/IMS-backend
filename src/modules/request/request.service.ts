@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
+import { User } from '../user/entities/user.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Request } from './entities/request.entity';
@@ -16,8 +17,34 @@ export class RequestService {
     );
   }
 
-  async findAll() {
-    return await this.requestRepository.find();
+  async getEmployeeRequests(user: User, type?: string): Promise<Request[]> {
+    const where: any = { submittedBy: { id: user?.id } };
+    where.type = type
+      ? type === 'return'
+        ? In(['repaired', 'replaced'])
+        : type
+      : undefined;
+    return await this.requestRepository.find({
+      relations: ['submittedBy', 'item', 'organization'],
+      where,
+      order: { createdDate: 'DESC' },
+    });
+  }
+
+  async getAdminRequests(user: User, type?: string): Promise<Request[]> {
+    const where: any = {
+      organization: { id: user?.organization?.id },
+    };
+    where.type = type
+      ? type === 'return'
+        ? In(['Repaired', 'Replaced'])
+        : type
+      : undefined;
+    return await this.requestRepository.find({
+      relations: ['organization', 'submittedBy', 'item'],
+      where,
+      order: { createdDate: 'DESC' },
+    });
   }
 
   findOne(id: number) {

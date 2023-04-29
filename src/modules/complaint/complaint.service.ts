@@ -22,7 +22,7 @@ export class ComplaintService {
     return this.complaintRepository.find({
       relations: ['submittedBy', 'organization'],
       where: { submittedBy: { roleId: 2 } },
-      order: { createdDate: 'DESC' }, // add this line to specify the ordering
+      order: { createdDate: 'DESC' },
     });
   }
 
@@ -50,12 +50,9 @@ export class ComplaintService {
   }
 
   async getEmployeeComplaints(user: any): Promise<Complaint[]> {
-    const userId = user.id;
-    console.log('okkk', userId);
-
     return this.complaintRepository.find({
-      relations: ['submittedBy'],
-      where: { submittedBy: { id: user.id } },
+      relations: ['submittedBy', 'organization'],
+      where: { submittedBy: { id: user?.id } },
       order: { createdDate: 'DESC' },
     });
   }

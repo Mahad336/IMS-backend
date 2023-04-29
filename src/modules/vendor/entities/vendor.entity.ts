@@ -41,5 +41,5 @@ export class Vendor {
   subcategories: Category[];
 
   @OneToMany(() => Item, (item) => item.vendor)
-  item: Item;
+  items: Item[];
 }

@@ -1,7 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { ItemService } from './item.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
+import { User } from '../user/entities/user.entity';
 
 @Controller('item')
 export class ItemController {
@@ -13,8 +25,10 @@ export class ItemController {
   }
 
   @Get()
-  findAll() {
-    return this.itemService.findAll();
+  @UseGuards(AuthGuardMiddleware)
+  findAll(@Req() req) {
+    const user = req?.user;
+    return this.itemService.findAll(user);
   }
 
   @Get(':id')

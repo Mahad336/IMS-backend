@@ -7,9 +7,19 @@ import { ItemService } from '../item/item.service';
 import { RequestService } from '../request/request.service';
 import { ItemModule } from '../item/item.module';
 import { RequestModule } from '../request/request.module';
+import { UserModule } from '../user/user.module';
+import { VendorModule } from '../vendor/vendor.module';
+import { VendorService } from '../vendor/vendor.service';
+import { Vendor } from '../vendor/entities/vendor.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category]), ItemModule, RequestModule],
+  imports: [
+    TypeOrmModule.forFeature([Category]),
+    TypeOrmModule.forFeature([Vendor]),
+    ItemModule,
+    RequestModule,
+    UserModule,
+  ],
   controllers: [CategoryController],
   providers: [CategoryService],
   exports: [TypeOrmModule.forFeature([Category])],

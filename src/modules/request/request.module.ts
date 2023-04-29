@@ -6,7 +6,7 @@ import { Request } from './entities/request.entity';
 import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Request])],
+  imports: [TypeOrmModule.forFeature([Request]), UserModule],
   controllers: [RequestController],
   providers: [RequestService],
   exports: [TypeOrmModule.forFeature([Request])],

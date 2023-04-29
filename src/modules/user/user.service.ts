@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -46,15 +51,21 @@ export class UserService {
     //     throw new ForbiddenException(err.message);
     // }
 
-    const userRole = req.user.role.name;
-    if (userRole === UserRole.SUPER_ADMIN) {
-      return this.userRepository.find({ where: { role: { name: 'admin' } } });
-    } else if (userRole === UserRole.ADMIN) {
-      return this.userRepository.find({
-        where: { role: { name: 'employee' } },
-      });
-    } else {
-      return this.userRepository.find({ where: { id: req.user.id } });
+    const user = req.user;
+    switch (user?.role.name) {
+      case UserRole.SUPER_ADMIN:
+        return this.userRepository.find({ where: { role: { name: 'admin' } } });
+      case UserRole.ADMIN:
+        return this.userRepository.find({
+          where: { role: { name: 'employee' } },
+        });
+      case UserRole.EMPLOYEE:
+        return this.userRepository.findOne({ where: { id: req.user.id } });
+      default:
+        throw new HttpException(
+          'Not an authorized User',
+          HttpStatus.UNAUTHORIZED,
+        );
     }
   }
 

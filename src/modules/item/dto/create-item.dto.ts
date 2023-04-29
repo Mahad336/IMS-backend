@@ -10,6 +10,7 @@ import { Type } from 'class-transformer';
 import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto';
 import { CreateVendorDto } from 'src/modules/vendor/dto/create-vendor.dto';
 import { Organization } from 'src/modules/organization/entities/organization.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 
 export class CreateItemDto {
   @IsString()
@@ -38,7 +39,7 @@ export class CreateItemDto {
 
   @IsOptional()
   @IsString()
-  assignedTo?: string;
+  assignedTo?: User;
 
   @ValidateNested()
   @Type(() => CreateCategoryDto)

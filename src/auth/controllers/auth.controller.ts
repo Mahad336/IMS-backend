@@ -6,6 +6,8 @@ import {
   Param,
   Put,
   UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { UserService } from 'src/modules/user/user.service';
@@ -57,9 +59,9 @@ export class AuthController {
   }
 
   @Get('current-user')
+  @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AuthGuardMiddleware)
   findCurrentUser(@Req() req) {
-    console.log('current user hittedddddddddddddddddddd');
     return req.user;
   }
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { Item } from './entities/item.entity';
@@ -16,8 +17,11 @@ export class ItemService {
     );
   }
 
-  async findAll() {
-    return await this.itemRepository.find();
+  async findAll(user: User) {
+    return await this.itemRepository.find({
+      relations: ['category', 'subcategory', 'organization', 'assignedTo'],
+      where: { organization: { id: user?.organization.id } },
+    });
   }
 
   findOne(id: number) {

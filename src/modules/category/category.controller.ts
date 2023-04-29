@@ -6,7 +6,10 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
+import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -26,8 +29,10 @@ export class CategoryController {
   }
 
   @Get('stats')
-  getSubCategoriesForCategories() {
-    return this.categoryService.getSubCategoriesForCategory();
+  @UseGuards(AuthGuardMiddleware)
+  getSubCategoriesForCategories(@Req() req) {
+    const user = req.user;
+    return this.categoryService.getSubCategoriesForCategory(user);
   }
 
   @Get(':id')

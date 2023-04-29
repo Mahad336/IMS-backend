@@ -9,11 +9,13 @@ import {
   Req,
   UnauthorizedException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
+import { TransformOrganizationDataInterceptor } from './interceptors/transform-organization-data.interceptor';
 
 @Controller('organization')
 export class OrganizationController {
@@ -30,6 +32,7 @@ export class OrganizationController {
   }
 
   @Get()
+  @UseInterceptors(TransformOrganizationDataInterceptor)
   findAll() {
     return this.organizationService.findAll();
   }

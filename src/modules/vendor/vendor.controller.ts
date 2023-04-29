@@ -1,7 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { CheckAblities } from '../ability/decorators/abilities.decorators';
+import { Action } from '../ability/ability.factory';
+import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
+import { Vendor } from './entities/vendor.entity';
+import { AbilitiesGuard } from '../ability/guards/abilities.guard';
 
 @Controller('vendor')
 export class VendorController {
@@ -13,8 +28,11 @@ export class VendorController {
   }
 
   @Get()
-  findAll() {
-    return this.vendorService.findAll();
+  @CheckAblities({ action: Action.Read, subject: Vendor })
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  findAll(@Req() req) {
+    const user = req.user;
+    return this.vendorService.findAll(user);
   }
 
   @Get(':id')

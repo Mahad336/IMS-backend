@@ -11,6 +11,7 @@ import { Category } from 'src/modules/category/entities/category.entity';
 import { Vendor } from 'src/modules/vendor/entities/vendor.entity';
 import { Request } from 'src/modules/request/entities/request.entity';
 import { Organization } from 'src/modules/organization/entities/organization.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @Entity()
 export class Item {
@@ -41,18 +42,19 @@ export class Item {
   @Column()
   percentageDepreciation: number;
 
-  @Column({ nullable: true })
-  assignedTo: string;
+  @ManyToOne(() => User, (user) => user.item)
+  @JoinColumn({ name: 'user_id' })
+  assignedTo?: User;
 
-  @ManyToOne(() => Category, (category) => category.item)
+  @ManyToOne(() => Category, (category) => category.item, { eager: true })
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @ManyToOne(() => Category, (category) => category.item)
+  @ManyToOne(() => Category, (category) => category.item, { eager: true })
   @JoinColumn({ name: 'subcategory_id' })
   subcategory: Category;
 
-  @ManyToOne(() => Vendor, (vendor) => vendor.item)
+  @ManyToOne(() => Vendor, (vendor) => vendor.items)
   @JoinColumn({ name: 'vendor_id' })
   vendor: Vendor;
 

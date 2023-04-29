@@ -9,6 +9,8 @@ import { IsNull } from 'typeorm';
 import { Request } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
+import { User } from '../user/entities/user.entity';
+import { Vendor } from '../vendor/entities/vendor.entity';
 
 @Injectable()
 export class CategoryService {
@@ -17,6 +19,8 @@ export class CategoryService {
     private categoryRepository: Repository<Category>,
     @InjectRepository(Item)
     private itemRepository: Repository<Item>,
+    @InjectRepository(Vendor)
+    private vendorRepository: Repository<Vendor>,
     @InjectEntityManager()
     private entityManager: EntityManager,
   ) {}
@@ -43,7 +47,7 @@ export class CategoryService {
     return `This action removes a #${id} category`;
   }
 
-  async getSubCategoriesForCategory(): Promise<any[]> {
+  async getSubCategoriesForCategory(user: User): Promise<any[]> {
     let categories = [];
 
     //filtering categoies on admin's based organization id
@@ -52,7 +56,7 @@ export class CategoryService {
       where: {
         parent: IsNull(),
         organization: {
-          id: 1,
+          id: user.organizationId,
         },
       },
     });
@@ -78,14 +82,15 @@ export class CategoryService {
             const faulty = items.filter((item) =>
               item.requests?.some((request) => request.type === 'faulty'),
             ).length;
-            const vendorNames = items.reduce((acc, item) => {
-              if (item.vendor) {
-                if (!acc.includes(item.vendor.name)) {
-                  acc.push(item.vendor.name);
-                }
-              }
-              return acc;
-            }, []);
+
+            const vendorNames = (
+              await this.vendorRepository.find({
+                relations: ['subcategories'],
+                where: { subcategories: { id: subCategory.id } },
+              })
+            )
+              .map((vendor) => vendor.name)
+              .join(', ');
 
             return {
               id: subCategory.id,
