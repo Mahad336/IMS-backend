@@ -36,7 +36,6 @@ export class TransformUserDataInterceptor implements NestInterceptor {
             }));
           }
         } else {
-          console.log('acha ggggg');
           if (role === UserRole.SUPER_ADMIN) {
             return {
               id: data.id,

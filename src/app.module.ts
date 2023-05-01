@@ -16,6 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { AbilityModule } from './modules/ability/ability.module';
 import { NestCloudinaryModule } from './nest-cloudinary/cloudinary.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import getConfig from './config/ormconfig';
 
 @Module({
@@ -36,6 +37,7 @@ import getConfig from './config/ormconfig';
     AuthModule,
     AbilityModule,
     NestCloudinaryModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

@@ -6,6 +6,7 @@ import {
   JoinColumn,
   OneToMany,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Vendor } from 'src/modules/vendor/entities/vendor.entity';
@@ -29,9 +30,6 @@ export class Item {
 
   @Column()
   unitPrice: number;
-
-  @CreateDateColumn()
-  dateOfPurchase: Date;
 
   @Column()
   currentPrice: number;
@@ -64,4 +62,10 @@ export class Item {
 
   @OneToMany(() => Request, (request) => request.item)
   requests: Request[];
+
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @UpdateDateColumn()
+  updatedDate: Date;
 }

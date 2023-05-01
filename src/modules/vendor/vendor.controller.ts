@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
@@ -17,6 +18,7 @@ import { Action } from '../ability/ability.factory';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { Vendor } from './entities/vendor.entity';
 import { AbilitiesGuard } from '../ability/guards/abilities.guard';
+import { TransformVendorDataInterceptor } from './interceptors/transform-vendor-data.interceptor';
 
 @Controller('vendor')
 export class VendorController {
@@ -30,6 +32,7 @@ export class VendorController {
   @Get()
   @CheckAblities({ action: Action.Read, subject: Vendor })
   @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @UseInterceptors(TransformVendorDataInterceptor)
   findAll(@Req() req) {
     const user = req.user;
     return this.vendorService.findAll(user);

@@ -12,25 +12,14 @@ export class TransformOrganizationDataInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((data) => {
-        if (Array.isArray(data)) {
-          return data.map((organization) => ({
-            id: organization.id,
-            src: organization.image,
-            name: organization.name,
-            location: organization.address,
-            email: organization.email,
-            contact: organization.representativeContact,
-          }));
-        } else {
-          return {
-            id: data.id,
-            src: data.image,
-            name: data.name,
-            location: data.address,
-            email: data.email,
-            contact: data.representativeContact,
-          };
-        }
+        return data.map((organization) => ({
+          id: organization.id,
+          src: organization.image,
+          name: organization.name,
+          location: organization.address,
+          email: organization.email,
+          contact: organization.representativeContact,
+        }));
       }),
     );
   }

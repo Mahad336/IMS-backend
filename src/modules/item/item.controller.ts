@@ -8,12 +8,14 @@ import {
   Delete,
   UseGuards,
   Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ItemService } from './item.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { User } from '../user/entities/user.entity';
+import { TransformItemDataInterceptor } from './interceptors/transform-item-data.interceptor';
 
 @Controller('item')
 export class ItemController {
@@ -26,6 +28,7 @@ export class ItemController {
 
   @Get()
   @UseGuards(AuthGuardMiddleware)
+  @UseInterceptors(TransformItemDataInterceptor)
   findAll(@Req() req) {
     const user = req?.user;
     return this.itemService.findAll(user);

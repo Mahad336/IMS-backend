@@ -7,6 +7,8 @@ import {
   JoinTable,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Item } from 'src/modules/item/entities/item.entity';
@@ -42,4 +44,10 @@ export class Vendor {
 
   @OneToMany(() => Item, (item) => item.vendor)
   items: Item[];
+
+  @CreateDateColumn()
+  createdDate: Date;
+
+  @UpdateDateColumn()
+  updatedDate: Date;
 }
