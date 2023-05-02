@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -23,6 +24,8 @@ import { Action } from '../ability/ability.factory';
 import { User } from './entities/user.entity';
 import { AbilitiesGuard } from '../ability/guards/abilities.guard';
 import { TransformUserDataInterceptor } from './interceptors/transform-user-data.interceptors';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Organization } from '../organization/entities/organization.entity';
 
 @Controller('user')
 export class UserController {
@@ -32,13 +35,24 @@ export class UserController {
   ) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto, @Res() res: any) {
+  @UseGuards(AuthGuardMiddleware)
+  @UseInterceptors(FileInterceptor('imageFile'))
+  async create(
+    @Body() createUserDto: CreateUserDto,
+    @Body('organization', ParseIntPipe) organization: Organization,
+    @UploadedFile() imageFile,
+    @Req() req,
+  ) {
     const errors = await validate(createUserDto);
-    console.log('errors ==> ', errors);
     if (errors.length > 0) return 'Send Accurate Data';
     await this.userValidator.validateCreateUserDto(createUserDto);
-    const user = await this.userService.create(createUserDto, res);
-    res.send({ user });
+    const currUserRole = req.user.role.name;
+    const user = await this.userService.create(
+      { ...createUserDto, organization },
+      currUserRole,
+      imageFile,
+    );
+    return user;
   }
 
   @Get()

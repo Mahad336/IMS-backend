@@ -33,7 +33,8 @@ export class CreateUserDto {
   readonly contact: string;
 
   @IsString()
-  readonly image: string;
+  @IsOptional()
+  readonly image?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -59,6 +60,7 @@ export class CreateUserDto {
   readonly totalExperience: number;
 
   @ApiProperty()
+  @IsOptional()
   readonly role: Role;
 
   @ApiProperty()

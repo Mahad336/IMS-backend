@@ -15,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { AbilityFactory, Action } from '../ability/ability.factory';
 import { ForbiddenError } from '@casl/ability';
 import { UserRole } from 'src/common/enums/user-role.enums';
+import { CloudinaryService } from 'nestjs-cloudinary';
 
 @Injectable()
 export class UserService {
@@ -22,18 +23,23 @@ export class UserService {
     @InjectRepository(User) private userRepository: Repository<User>,
     private configService: ConfigService,
     private abilityFactory: AbilityFactory,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(user: CreateUserDto, res: any): Promise<User> {
+  async create(user: CreateUserDto, currUserRole, imageFile): Promise<User> {
+    const newUserRole: any = currUserRole === UserRole.SUPER_ADMIN ? 2 : 3;
+    const image = await this.uploadFile(imageFile);
     const genSalt = await bcrypt.genSalt();
     const newUser = this.userRepository.create({
       ...user,
       password: await bcrypt.hash(user.password, genSalt),
+      role: newUserRole,
+      roleId: newUserRole,
+      organizationId: Number(user.organization),
+      image,
     });
+
     const savedUser = await this.userRepository.save(newUser);
-    const payload = { id: String(savedUser.id), role: savedUser.role };
-    const token = generateToken(payload, this.configService);
-    res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
 
     return savedUser;
   }
@@ -94,5 +100,12 @@ export class UserService {
 
   async remove(id: number) {
     return await this.userRepository.delete({ id });
+  }
+  async uploadFile(file) {
+    const response = await this.cloudinaryService.uploadFile(file, {
+      folder: 'ims/users',
+      overwrite: true,
+    });
+    return response.secure_url;
   }
 }

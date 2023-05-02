@@ -26,7 +26,7 @@ export class Organization {
   email: string;
 
   @Column()
-  image: string;
+  image?: string;
 
   @Column()
   bio: string;

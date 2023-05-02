@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { UserRole } from 'src/common/enums/user-role.enums';
 import { formatDate } from 'src/utils/formattedDate';
 
 @Injectable()
@@ -14,13 +15,16 @@ export class TransformComplaintDataInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data) => {
         const isAdmin =
-          context.switchToHttp().getRequest().user.role.name === 'admin';
+          context.switchToHttp().getRequest().user.role.name === UserRole.ADMIN;
+        const isSuperAdmin =
+          context.switchToHttp().getRequest().user.role.name ===
+          UserRole.SUPER_ADMIN;
 
         if (isAdmin) {
           return {
             receivedComplaints: data.receivedComplaints?.map((complaint) => ({
               id: complaint.id,
-              adminName: complaint?.submittedBy?.name,
+              employeeName: complaint?.submittedBy?.name,
               organization: complaint?.organization?.name,
               description: complaint?.description,
               submissionDate: formatDate(complaint?.createdDate),
@@ -28,13 +32,21 @@ export class TransformComplaintDataInterceptor implements NestInterceptor {
             })),
             submittedComplaints: data.submittedComplaints?.map((complaint) => ({
               id: complaint.id,
-              adminName: complaint?.submittedBy?.name,
-              organization: complaint?.organization?.name,
-              description: complaint?.description,
-              submissionDate: formatDate(complaint?.createdDate),
-              status: complaint?.status,
+              title: complaint.title,
+              description: complaint.description,
+              subDate: formatDate(complaint.createdDate),
+              status: complaint.status,
             })),
           };
+        } else if (isSuperAdmin) {
+          return data.map((complaint) => ({
+            id: complaint.id,
+            adminName: complaint?.submittedBy?.name,
+            organization: complaint?.organization?.name,
+            description: complaint?.description,
+            submissionDate: formatDate(complaint?.createdDate),
+            status: complaint?.status,
+          }));
         } else {
           return data.map((complaint) => ({
             id: complaint.id,

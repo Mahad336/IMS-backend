@@ -254,7 +254,6 @@ export class DashboardService {
 
   private async getInventoryDataByMonth(user: User) {
     const currentYear = new Date().getFullYear();
-    console.log('gett');
 
     const categories = await this.categoryRepository
       .createQueryBuilder('category')

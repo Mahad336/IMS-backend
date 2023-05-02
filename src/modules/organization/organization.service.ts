@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CloudinaryService } from 'nestjs-cloudinary';
 import { Repository } from 'typeorm';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -10,6 +11,7 @@ export class OrganizationService {
   constructor(
     @InjectRepository(Organization)
     private organizationRepository: Repository<Organization>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async create(
@@ -35,5 +37,13 @@ export class OrganizationService {
 
   remove(id: number) {
     return `This action removes a #${id} organization`;
+  }
+
+  async uploadFile(file) {
+    const response = await this.cloudinaryService.uploadFile(file, {
+      folder: 'ims/organizations',
+      overwrite: true,
+    });
+    return response.secure_url;
   }
 }

@@ -41,7 +41,7 @@ export class User {
   contact: string;
 
   @Column()
-  image: string;
+  image?: string;
 
   @Column({ nullable: true })
   designation?: string;
@@ -58,7 +58,7 @@ export class User {
   @Column({ nullable: true })
   totalExperience?: number;
 
-  @Column({ nullable: true })
+  @Column()
   roleId: number;
 
   @ManyToOne(() => Role, (role) => role.user, { eager: true })

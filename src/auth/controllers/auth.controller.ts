@@ -72,6 +72,6 @@ export class AuthController {
     if (jwt) {
       res.clearCookie('jwt');
     }
-    res.send({ message: 'Successfuly logged Out' });
+    res.send({ message: 'Successfuly logged Out', user: req.user });
   }
 }
