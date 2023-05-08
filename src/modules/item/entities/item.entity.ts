@@ -31,14 +31,14 @@ export class Item {
   @Column()
   unitPrice: number;
 
-  @Column()
-  currentPrice: number;
+  @Column({ nullable: true })
+  currentPrice?: number;
 
-  @Column()
-  deprecatedPrice: number;
+  @Column({ nullable: true })
+  deprecatedPrice?: number;
 
-  @Column()
-  percentageDepreciation: number;
+  @Column({ nullable: true })
+  percentageDepreciation?: number;
 
   @ManyToOne(() => User, (user) => user.item)
   @JoinColumn({ name: 'user_id' })
@@ -61,7 +61,7 @@ export class Item {
   organization: Organization;
 
   @OneToMany(() => Request, (request) => request.item)
-  requests: Request[];
+  requests?: Request[];
 
   @CreateDateColumn()
   createdDate: Date;

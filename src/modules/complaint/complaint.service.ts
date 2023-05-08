@@ -13,9 +13,14 @@ export class ComplaintService {
     private complaintRepository: Repository<Complaint>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
-  async create(createComplaintDto: CreateComplaintDto) {
+  async create(createComplaintDto: CreateComplaintDto, files) {
     const newComplaint = this.complaintRepository.create(createComplaintDto);
-    return await this.complaintRepository.save(newComplaint);
+    const attachments: string[] =
+      files.length > 0 ? await this.uploadFiles(files) : [];
+    return await this.complaintRepository.save({
+      ...newComplaint,
+      attachments,
+    });
   }
 
   async getAllComplaints(): Promise<Complaint[]> {
@@ -57,16 +62,33 @@ export class ComplaintService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} complaint`;
+  async findOne(id: number) {
+    return await this.complaintRepository.findOne({
+      relations: ['submittedBy', 'organization'],
+      where: { id },
+    });
   }
 
-  update(id: number, updateComplaintDto: UpdateComplaintDto) {
-    return `This action updates a #${id} complaint`;
+  async update(id: number, updateComplaintDto: UpdateComplaintDto, admin) {
+    const complaint = await this.complaintRepository.findOneBy({ id });
+    if (!complaint) {
+      throw new Error(`Complaint with ID ${id} not found`);
+    }
+    return await this.complaintRepository.save({
+      ...complaint,
+      ...updateComplaintDto,
+      actionBy: admin.id,
+      actionDateTime: new Date(),
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} complaint`;
+  async remove(id: number) {
+    const complaint = await this.complaintRepository.findOneBy({ id });
+    if (!complaint) {
+      throw new Error(`Complaint with ID ${id} not found`);
+    }
+    await this.complaintRepository.delete(id);
+    return `Complaint with ID ${id} has been deleted`;
   }
 
   async uploadFiles(files) {

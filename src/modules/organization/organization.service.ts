@@ -16,27 +16,53 @@ export class OrganizationService {
 
   async create(
     createOrganizationDto: CreateOrganizationDto,
+    imageFile,
   ): Promise<Organization> {
-    const newOrganization = this.organizationRepository.create(
-      createOrganizationDto,
-    );
+    const image = await this.uploadFile(imageFile);
+    const newOrganization = this.organizationRepository.create({
+      ...createOrganizationDto,
+      image,
+    });
     return await this.organizationRepository.save(newOrganization);
   }
 
   async findAll() {
-    return await this.organizationRepository.find();
+    return await this.organizationRepository.find({ relations: ['user'] });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} organization`;
+  async findOne(id: number) {
+    return await this.organizationRepository.findOne({
+      relations: ['user'],
+      where: { id },
+    });
   }
 
-  update(id: number, updateOrganizationDto: UpdateOrganizationDto) {
-    return `This action updates a #${id} organization`;
+  async update(
+    id: number,
+    updateOrganizationDto: UpdateOrganizationDto,
+    imageFile,
+  ) {
+    const organization = this.organizationRepository.findOneBy({ id });
+    if (!organization) {
+      throw new Error(`Organization with ID ${id} is not found`);
+    }
+    const image = imageFile
+      ? await this.uploadFile(imageFile)
+      : (await organization).image;
+    return this.organizationRepository.save({
+      ...updateOrganizationDto,
+      id,
+      image,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} organization`;
+  async remove(id: number) {
+    const organization = await this.organizationRepository.findOneBy({ id });
+    if (!organization) {
+      throw new Error(`Organization with ID ${id} not found`);
+    }
+    await this.organizationRepository.delete(id);
+    return `Organization with ID ${id} has been deleted`;
   }
 
   async uploadFile(file) {

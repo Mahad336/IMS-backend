@@ -20,12 +20,19 @@ import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { UserRole } from 'src/common/enums/user-role.enums';
 import { Request } from './entities/request.entity';
 import { TransformRequestDataInterceptor } from './interceptors/transform-request-data.interceptor';
+import { AbilitiesGuard } from '../ability/guards/abilities.guard';
+import { CheckAblities } from '../ability/decorators/abilities.decorators';
+import { Action } from '../ability/ability.factory';
+import { Complaint } from '../complaint/entities/complaint.entity';
+import { User } from '../user/entities/user.entity';
 
 @Controller('request')
 export class RequestController {
   constructor(private readonly requestService: RequestService) {}
 
   @Post()
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Create, subject: Complaint })
   create(@Body() createRequestDto: CreateRequestDto) {
     return this.requestService.create(createRequestDto);
   }
@@ -50,8 +57,10 @@ export class RequestController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRequestDto: UpdateRequestDto) {
-    return this.requestService.update(+id, updateRequestDto);
+  @UseGuards(AuthGuardMiddleware)
+  update(@Param('id') id: string, @Body() updateRequestDto, @Req() req) {
+    const admin: User = req.user;
+    return this.requestService.update(+id, updateRequestDto, admin);
   }
 
   @Delete(':id')

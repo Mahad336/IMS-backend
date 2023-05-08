@@ -9,8 +9,12 @@ import { Type } from 'class-transformer';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Organization } from 'src/modules/organization/entities/organization.entity';
 import { Item } from 'src/modules/item/entities/item.entity';
+import { Column } from 'typeorm';
 
 export class CreateRequestDto {
+  @IsString()
+  title: string;
+
   @IsNotEmpty()
   @IsString()
   type: string;
@@ -31,7 +35,7 @@ export class CreateRequestDto {
   @IsNotEmpty()
   item: Item;
 
-  @IsNotEmpty()
+  @Column({ default: 'pending' })
   status: string;
 
   @Type(() => Date)

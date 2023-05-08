@@ -58,7 +58,7 @@ export class User {
   @Column({ nullable: true })
   totalExperience?: number;
 
-  @Column()
+  @Column({ nullable: true })
   roleId: number;
 
   @ManyToOne(() => Role, (role) => role.user, { eager: true })

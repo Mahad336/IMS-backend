@@ -13,6 +13,7 @@ export class TransformVendorDataInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data) => {
         return data.map((vendor) => ({
+          categories: vendor?.categories?.map((category) => category.id),
           id: vendor.id,
           name: vendor.name,
           contact: vendor?.contact,

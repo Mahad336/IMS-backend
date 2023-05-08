@@ -6,7 +6,7 @@ import { Organization } from 'src/modules/organization/entities/organization.ent
 
 export class CreateVendorDto {
   @IsNotEmpty()
-  readonly name: string;
+  name: string;
 
   @IsNotEmpty()
   contact: string;

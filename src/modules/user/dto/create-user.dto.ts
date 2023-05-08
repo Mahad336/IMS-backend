@@ -59,12 +59,8 @@ export class CreateUserDto {
   @IsOptional()
   readonly totalExperience: number;
 
-  @ApiProperty()
-  @IsOptional()
   readonly role: Role;
 
-  @ApiProperty()
-  @IsOptional()
   readonly organization: Organization;
 
   @ApiProperty()

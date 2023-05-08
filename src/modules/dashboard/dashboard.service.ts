@@ -127,7 +127,7 @@ export class DashboardService {
         'thisMonthQuantity',
       )
       .where('user.roleId = 3')
-      .where('user.organizationId = :organizationId', {
+      .andWhere('user.organizationId = :organizationId', {
         organizationId: user.organizationId,
       })
       .getRawOne();

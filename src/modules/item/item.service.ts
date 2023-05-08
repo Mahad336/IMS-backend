@@ -19,20 +19,34 @@ export class ItemService {
 
   async findAll(user: User) {
     return await this.itemRepository.find({
-      relations: ['category', 'subcategory', 'organization', 'assignedTo'],
+      relations: ['category', 'subcategory', 'organization'],
       where: { organization: { id: user?.organization.id } },
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} item`;
+  async findOne(id: number) {
+    return await this.itemRepository.findOne({
+      relations: ['assignedTo', 'vendor'],
+      where: {
+        id,
+      },
+    });
   }
 
-  update(id: number, updateItemDto: UpdateItemDto) {
-    return `This action updates a #${id} item`;
+  async update(id: number, updateItemDto: UpdateItemDto) {
+    const item = await this.itemRepository.findOneBy({ id });
+    if (!item) {
+      throw new Error(`Item with ID ${id} not found`);
+    }
+    return await this.itemRepository.save({ ...item, ...updateItemDto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} item`;
+  async remove(id: number) {
+    const item = await this.itemRepository.findOneBy({ id });
+    if (!item) {
+      throw new Error(`Item with ID ${id} not found`);
+    }
+    await this.itemRepository.delete(id);
+    return `Item with ID ${id} has been deleted`;
   }
 }

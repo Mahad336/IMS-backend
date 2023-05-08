@@ -64,19 +64,27 @@ export class UserController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuardMiddleware)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuardMiddleware)
+  @UseInterceptors(FileInterceptor('imageFile'))
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
+    @Body('organization', ParseIntPipe) organization: Organization,
     @Req() req: any,
+    @UploadedFile() imageFile,
   ) {
-    await this.userValidator.validateUpdateUserDto(+id, updateUserDto);
-    return this.userService.update(+id, updateUserDto, req);
+    return this.userService.update(
+      +id,
+      { ...updateUserDto, organization },
+      req,
+      imageFile,
+    );
   }
 
   @Delete(':id')

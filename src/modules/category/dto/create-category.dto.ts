@@ -8,6 +8,9 @@ export class CreateCategoryDto {
   @IsOptional()
   parentId?: number;
 
+  @IsOptional()
+  subCategories?: string[];
+
   @IsNotEmpty()
   organization: Organization;
 }

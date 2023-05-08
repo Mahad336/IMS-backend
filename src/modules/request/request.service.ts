@@ -47,12 +47,25 @@ export class RequestService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} request`;
+  async findOne(id: number) {
+    return await this.requestRepository.findOne({
+      relations: ['item', 'submittedBy'],
+      where: { id },
+    });
   }
 
-  update(id: number, updateRequestDto: UpdateRequestDto) {
-    return `This action updates a #${id} request`;
+  async update(id: number, updateRequestDto: UpdateRequestDto, admin: any) {
+    const request = await this.requestRepository.findOneBy({ id });
+    console.log(request);
+    if (!request) {
+      throw new Error(`Request with ID ${id} not found`);
+    }
+    return await this.requestRepository.save({
+      ...request,
+      ...updateRequestDto,
+      actionBy: admin.id,
+      actionDateTime: new Date(),
+    });
   }
 
   remove(id: number) {

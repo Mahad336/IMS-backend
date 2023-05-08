@@ -10,6 +10,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
+import { User } from '../user/entities/user.entity';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -24,8 +25,10 @@ export class CategoryController {
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  @UseGuards(AuthGuardMiddleware)
+  findAll(@Req() req) {
+    const user: User = req?.user;
+    return this.categoryService.findAll(user);
   }
 
   @Get('stats')

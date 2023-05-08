@@ -57,7 +57,7 @@ export class AbilityFactory {
 
     // Admin abilities
     if (user.role.name == UserRole.ADMIN) {
-      can(Action.Create, [Item, Vendor, Category, Complaint, User, Request]);
+      can(Action.Create, [Item, Vendor, Category, Complaint, User]);
       can(Action.Update, User, {
         organizationId: user.organization.id,
       });

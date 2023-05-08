@@ -16,13 +16,14 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { User } from '../user/entities/user.entity';
 import { TransformItemDataInterceptor } from './interceptors/transform-item-data.interceptor';
+import { validate } from 'class-validator';
 
 @Controller('item')
 export class ItemController {
   constructor(private readonly itemService: ItemService) {}
 
   @Post()
-  create(@Body() createItemDto: CreateItemDto) {
+  async create(@Body() createItemDto: CreateItemDto) {
     return this.itemService.create(createItemDto);
   }
 

@@ -20,13 +20,15 @@ export class CreateComplaintDto {
   description: string;
 
   @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  suggestion: string;
+  suggestion?: string;
 
   @IsNotEmpty()
   @IsNumber()
   submittedBy: User; // foreign key to User entity
 
+  @IsOptional()
   attachments?: any;
 
   @IsOptional()

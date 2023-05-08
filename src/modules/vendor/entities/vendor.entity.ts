@@ -36,13 +36,13 @@ export class Vendor {
   categories: Category[];
 
   @ManyToMany(() => Category, {
-    cascade: true,
     nullable: true,
+    onDelete: 'CASCADE',
   })
   @JoinTable()
   subcategories: Category[];
 
-  @OneToMany(() => Item, (item) => item.vendor)
+  @OneToMany(() => Item, (item) => item.vendor, { cascade: true })
   items: Item[];
 
   @CreateDateColumn()

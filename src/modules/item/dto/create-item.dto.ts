@@ -7,10 +7,10 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto';
-import { CreateVendorDto } from 'src/modules/vendor/dto/create-vendor.dto';
 import { Organization } from 'src/modules/organization/entities/organization.entity';
 import { User } from 'src/modules/user/entities/user.entity';
+import { Category } from 'src/modules/category/entities/category.entity';
+import { Vendor } from 'src/modules/vendor/entities/vendor.entity';
 
 export class CreateItemDto {
   @IsString()
@@ -25,33 +25,32 @@ export class CreateItemDto {
   @IsNumber()
   unitPrice: number;
 
-  @IsDateString()
-  dateOfPurchase: Date;
+  @IsOptional()
+  dateOfPurchase?: Date;
 
   @IsNumber()
-  currentPrice: number;
+  @IsOptional()
+  currentPrice?: number;
 
   @IsNumber()
-  deprecatedPrice: number;
+  @IsOptional()
+  deprecatedPrice?: number;
 
   @IsNumber()
-  percentageDepreciation: number;
+  @IsOptional()
+  percentageDepreciation?: number;
 
   @IsOptional()
-  @IsString()
   assignedTo?: User;
 
-  @ValidateNested()
-  @Type(() => CreateCategoryDto)
-  category: CreateCategoryDto;
+  @Type(() => Category)
+  category: Category;
 
-  @ValidateNested()
-  @Type(() => CreateCategoryDto)
-  subcategory: CreateCategoryDto;
+  @Type(() => Category)
+  subcategory: Category;
 
-  @ValidateNested()
-  @Type(() => CreateVendorDto)
-  vendor: CreateVendorDto;
+  @Type(() => Vendor)
+  vendor: Vendor;
 
   @IsNotEmpty()
   organization: Organization;

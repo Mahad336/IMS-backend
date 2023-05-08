@@ -39,15 +39,40 @@ export class VendorService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vendor`;
+  async findOne(id: number) {
+    return await this.vendorRepository.findOne({
+      relations: ['categories', 'subcategories', 'items'],
+      where: { id },
+    });
   }
 
-  update(id: number, updateVendorDto: UpdateVendorDto) {
-    return `This action updates a #${id} vendor`;
+  async update(id: number, updateVendorDto: UpdateVendorDto) {
+    const vendor = await this.vendorRepository.findOneBy({ id });
+    if (!vendor) {
+      throw new Error(`Vendor with ID ${id} not found`);
+    }
+
+    const categories = await this.categoryRepository.findBy({
+      id: In(updateVendorDto.categories),
+    });
+    const subcategories = await this.categoryRepository.findBy({
+      id: In(updateVendorDto.subcategories),
+    });
+
+    return await this.vendorRepository.save({
+      ...vendor,
+      ...updateVendorDto,
+      categories,
+      subcategories,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vendor`;
+  async remove(id: number) {
+    const vendor = await this.vendorRepository.findOneBy({ id });
+    if (!vendor) {
+      throw new Error(`Vendor with ID ${id} not found`);
+    }
+    await this.vendorRepository.delete(id);
+    return `Vendor with ID ${id} has been deleted`;
   }
 }

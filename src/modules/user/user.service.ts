@@ -10,12 +10,13 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { generateToken } from 'src/common/utils/generateJWT';
 import { ConfigService } from '@nestjs/config';
 import { AbilityFactory, Action } from '../ability/ability.factory';
 import { ForbiddenError } from '@casl/ability';
 import { UserRole } from 'src/common/enums/user-role.enums';
 import { CloudinaryService } from 'nestjs-cloudinary';
+import { request } from 'http';
+import { Item } from '../item/entities/item.entity';
 
 @Injectable()
 export class UserService {
@@ -76,31 +77,48 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    return await this.userRepository.findOne({ where: { id } });
+    return this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.organization', 'userorganization')
+      .leftJoinAndSelect('user.item', 'useritem')
+      .leftJoinAndSelect('useritem.category', 'itemcategory')
+      .leftJoinAndSelect('useritem.subcategory', 'itemsubcategory')
+      .leftJoinAndSelect('user.requests', 'request')
+      .leftJoinAndSelect('request.item', 'item')
+      .leftJoinAndSelect('item.category', 'category')
+      .leftJoinAndSelect('item.subcategory', 'subcategory')
+      .where('user.id = :id', { id })
+      .getOne();
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto, req: any) {
-    const user = await this.userRepository.findOneBy({ id });
-    const currUser = req.user;
-    const ability = this.abilityFactory.defineAbility(currUser);
-    try {
-      ForbiddenError.from(ability).throwUnlessCan(Action.Update, user);
-    } catch (err) {
-      if (err instanceof ForbiddenError)
-        throw new ForbiddenException(err.message);
+  async update(id: number, updateUserDto: UpdateUserDto, req: any, imageFile) {
+    const user = await this.userRepository.findOneByOrFail({ id });
+    if (!user) {
+      throw new Error(`User with ID ${id} not found`);
     }
 
+    const image = imageFile ? await this.uploadFile(imageFile) : user.image;
     const genSalt = await bcrypt.genSalt();
-    return await this.userRepository.save({
-      ...user,
+
+    const updatedUser = this.userRepository.merge(user, {
       ...updateUserDto,
-      password: await bcrypt.hash(user.password, genSalt),
+      password: await bcrypt.hash(updateUserDto.password, genSalt),
+      image,
     });
+    const result = await this.userRepository.update(id, updatedUser);
+
+    return result;
   }
 
   async remove(id: number) {
-    return await this.userRepository.delete({ id });
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new Error(`User with ID ${id} not found`);
+    }
+    await this.userRepository.delete(id);
+    return `User with ID ${id} has been deleted`;
   }
+
   async uploadFile(file) {
     const response = await this.cloudinaryService.uploadFile(file, {
       folder: 'ims/users',

@@ -16,9 +16,12 @@ export class Request {
   id: number;
 
   @Column()
-  type: string;
+  title: string;
 
   @Column()
+  type: string;
+
+  @Column({ default: 'pending' })
   status: string;
 
   @Column()
@@ -33,7 +36,7 @@ export class Request {
   @ManyToOne(() => User, (user) => user.requests)
   actionBy?: User;
 
-  @ManyToOne(() => Item, (item) => item.requests)
+  @ManyToOne(() => Item, (item) => item.requests, { eager: true })
   item: Item;
 
   @Column({ nullable: true })

@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { VendorService } from './vendor.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
@@ -44,7 +45,7 @@ export class VendorController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVendorDto: UpdateVendorDto) {
+  update(@Param('id') id: string, @Body() updateVendorDto) {
     return this.vendorService.update(+id, updateVendorDto);
   }
 

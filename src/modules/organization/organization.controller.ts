@@ -32,8 +32,7 @@ export class OrganizationController {
     @Req() req: any,
   ) {
     if (req.user.role.id != 1) throw new UnauthorizedException();
-    const image = await this.organizationService.uploadFile(imageFile);
-    return this.organizationService.create({ ...createOrganizationDto, image });
+    return this.organizationService.create(createOrganizationDto, imageFile);
   }
 
   @Get()
@@ -43,16 +42,25 @@ export class OrganizationController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.organizationService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.organizationService.findOne(+id);
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuardMiddleware)
+  @UseInterceptors(FileInterceptor('image'))
   update(
     @Param('id') id: string,
-    @Body() updateOrganizationDto: UpdateOrganizationDto,
+    @Body() updateOrganizationDto,
+    @UploadedFile() imageFile,
+    @Req() req: any,
   ) {
-    return this.organizationService.update(+id, updateOrganizationDto);
+    if (req.user.role.id != 1) throw new UnauthorizedException();
+    return this.organizationService.update(
+      +id,
+      updateOrganizationDto,
+      imageFile,
+    );
   }
 
   @Delete(':id')

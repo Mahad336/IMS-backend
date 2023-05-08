@@ -20,8 +20,8 @@ export class Complaint {
   @Column()
   description: string;
 
-  @Column()
-  suggestion: string;
+  @Column({ nullable: true })
+  suggestion?: string;
 
   @Column({ nullable: true, type: 'text', array: true })
   attachments?: string[];

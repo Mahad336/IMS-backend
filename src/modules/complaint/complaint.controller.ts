@@ -37,14 +37,14 @@ export class ComplaintController {
     @Body('submittedBy', ParseIntPipe) submittedBy: User,
     @Body('organization', ParseIntPipe) organization: Organization,
   ) {
-    const attachments = await this.complaintService.uploadFiles(files);
-
-    return this.complaintService.create({
-      ...createComplaintDto,
-      submittedBy,
-      organization,
-      attachments,
-    });
+    return this.complaintService.create(
+      {
+        ...createComplaintDto,
+        submittedBy,
+        organization,
+      },
+      files,
+    );
   }
 
   @Get()
@@ -70,11 +70,10 @@ export class ComplaintController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateComplaintDto: UpdateComplaintDto,
-  ) {
-    return this.complaintService.update(+id, updateComplaintDto);
+  @UseGuards(AuthGuardMiddleware)
+  update(@Param('id') id: string, @Body() updateComplaintDto, @Req() req) {
+    const admin = req.user;
+    return this.complaintService.update(+id, updateComplaintDto, admin);
   }
 
   @Delete(':id')
