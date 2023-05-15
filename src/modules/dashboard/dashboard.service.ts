@@ -9,6 +9,7 @@ import { Item } from '../item/entities/item.entity';
 import { Vendor } from '../vendor/entities/vendor.entity';
 import { Category } from '../category/entities/category.entity';
 import { getMonthName } from 'src/common/constants/month-data';
+import { UserRoleId } from 'src/common/enums/user-role.enums';
 
 @Injectable()
 export class DashboardService {
@@ -54,20 +55,24 @@ export class DashboardService {
       .createQueryBuilder('complaint')
       .select('COUNT(*)', 'totalQuantity')
       .addSelect(
-        `COUNT(*) FILTER (WHERE DATE_TRUNC('month', "createdDate") = DATE_TRUNC('month', NOW()))`,
+        `COUNT(*) FILTER (WHERE DATE_TRUNC('month', "complaint"."createdDate") = DATE_TRUNC('month', NOW()))`,
         'thisMonthQuantity',
       )
+      .innerJoin('complaint.submittedBy', 'submittedBy')
       .where('complaint.status = :status', { status: complaintStatus.PENDING })
+      .andWhere('submittedBy.roleId = :roleId', { roleId: UserRoleId.ADMIN })
       .getRawOne();
 
     const resolvedComplaints = await this.complaintRepository
       .createQueryBuilder('complaint')
       .select('COUNT(*)', 'totalQuantity')
       .addSelect(
-        `COUNT(*) FILTER (WHERE DATE_TRUNC('month', "createdDate") = DATE_TRUNC('month', NOW()))`,
+        `COUNT(*) FILTER (WHERE DATE_TRUNC('month', "complaint"."createdDate") = DATE_TRUNC('month', NOW()))`,
         'thisMonthQuantity',
       )
+      .innerJoin('complaint.submittedBy', 'submittedBy')
       .where('complaint.status = :status', { status: complaintStatus.RESOLVED })
+      .andWhere('submittedBy.roleId = :roleId', { roleId: UserRoleId.ADMIN })
       .getRawOne();
 
     const superAdminDashboardData = [
@@ -105,8 +110,6 @@ export class DashboardService {
   }
 
   async getAdminDashboardData(user: User): Promise<any> {
-    const currentDate = new Date();
-
     const items = await this.itemRepository
       .createQueryBuilder('item')
       .select('COUNT(*)', 'totalQuantity')

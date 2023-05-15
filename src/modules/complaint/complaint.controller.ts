@@ -24,12 +24,17 @@ import { Complaint } from './entities/complaint.entity';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { UserRole } from 'src/common/enums/user-role.enums';
 import { TransformComplaintDataInterceptor } from './interceptors/transform-complaint-data.interceptor';
+import { AbilitiesGuard } from '../ability/guards/abilities.guard';
+import { CheckAblities } from '../ability/decorators/abilities.decorators';
+import { Action } from '../ability/ability.factory';
 
 @Controller('complaint')
 export class ComplaintController {
   constructor(private readonly complaintService: ComplaintService) {}
 
   @Post()
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Create, subject: Complaint })
   @UseInterceptors(FilesInterceptor('attachments'))
   async create(
     @Body() createComplaintDto,
@@ -65,19 +70,23 @@ export class ComplaintController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.complaintService.findOne(+id);
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Read, subject: Complaint })
+  findOne(@Param('id') id: string, @Req() req) {
+    return this.complaintService.findOne(+id, req.user);
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuardMiddleware)
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Update, subject: Complaint })
   update(@Param('id') id: string, @Body() updateComplaintDto, @Req() req) {
-    const admin = req.user;
-    return this.complaintService.update(+id, updateComplaintDto, admin);
+    return this.complaintService.update(+id, updateComplaintDto, req.user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.complaintService.remove(+id);
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Delete, subject: Complaint })
+  remove(@Param('id') id: string, @Req() req) {
+    return this.complaintService.remove(+id, req.user);
   }
 }

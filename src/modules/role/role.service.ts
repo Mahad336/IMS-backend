@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,9 +12,12 @@ export class RoleService {
     private roleRepository: Repository<Role>,
   ) {}
 
-  async create(role: Role): Promise<Role> {
-    const newRole = this.roleRepository.create(role);
-    return await this.roleRepository.save(newRole);
+  async create(role: Role) {
+    // const newRole = this.roleRepository.create(role);
+    // return await this.roleRepository.save(newRole);
+    return new UnauthorizedException(
+      'New roles cannot be created until additional client requirements are provided.',
+    );
   }
 
   findAll() {

@@ -59,7 +59,6 @@ export class AuthController {
   }
 
   @Get('current-user')
-  @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AuthGuardMiddleware)
   findCurrentUser(@Req() req) {
     return req.user;

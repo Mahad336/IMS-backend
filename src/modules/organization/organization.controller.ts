@@ -18,13 +18,18 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { AuthGuardMiddleware } from 'src/auth/guards/auth-guard.middleware';
 import { TransformOrganizationDataInterceptor } from './interceptors/transform-organization-data.interceptor';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CheckAblities } from '../ability/decorators/abilities.decorators';
+import { Action } from '../ability/ability.factory';
+import { Organization } from './entities/organization.entity';
+import { AbilitiesGuard } from '../ability/guards/abilities.guard';
 
 @Controller('organization')
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
   @Post()
-  @UseGuards(AuthGuardMiddleware)
+  @CheckAblities({ action: Action.Create, subject: Organization })
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createOrganizationDto,
@@ -42,12 +47,15 @@ export class OrganizationController {
   }
 
   @Get(':id')
+  @CheckAblities({ action: Action.Read, subject: Organization })
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
   async findOne(@Param('id') id: string) {
     return await this.organizationService.findOne(+id);
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuardMiddleware)
+  @CheckAblities({ action: Action.Update, subject: Organization })
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
   @UseInterceptors(FileInterceptor('image'))
   update(
     @Param('id') id: string,
@@ -64,6 +72,8 @@ export class OrganizationController {
   }
 
   @Delete(':id')
+  @CheckAblities({ action: Action.Delete, subject: Organization })
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
   remove(@Param('id') id: string) {
     return this.organizationService.remove(+id);
   }

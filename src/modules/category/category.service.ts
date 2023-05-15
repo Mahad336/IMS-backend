@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -6,8 +10,6 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
 import { Item } from '../item/entities/item.entity';
 import { IsNull } from 'typeorm';
-import { InjectEntityManager } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Vendor } from '../vendor/entities/vendor.entity';
 import { ReqTypes } from 'src/common/enums/request-types';
@@ -21,8 +23,6 @@ export class CategoryService {
     private itemRepository: Repository<Item>,
     @InjectRepository(Vendor)
     private vendorRepository: Repository<Vendor>,
-    @InjectEntityManager()
-    private entityManager: EntityManager,
   ) {}
   async create(createCategoryDto: CreateCategoryDto) {
     const { name, subCategories, organization } = createCategoryDto;
@@ -88,19 +88,27 @@ export class CategoryService {
 
     return {
       ...category,
-      vendors: category.parent ? subCategoryVendors : categoryVendors,
+      vendors: category?.parent ? subCategoryVendors : categoryVendors,
       itemStats,
     };
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+  async update(id: number, updateCategoryDto: UpdateCategoryDto, user: User) {
     const { name, subCategories } = updateCategoryDto;
 
     // retrieve the category from the database using its ID
-    const category = await this.categoryRepository.findOneBy({ id });
 
+    const category = await this.categoryRepository.findOne({
+      relations: ['organization'],
+      where: { id },
+    });
     if (!category) {
       throw new NotFoundException('Category not found');
+    }
+    if (category.organization.id !== user.organizationId) {
+      throw new UnauthorizedException(
+        'You are only allowed to update category from your organizations',
+      );
     }
 
     // update the category's name if a new name is provided
@@ -110,12 +118,12 @@ export class CategoryService {
     }
 
     // update the subcategories if a new set of subcategories is provided
-    if (subCategories) {
+    if (subCategories.length > 0) {
       // delete all existing subcategories associated with the category
       await this.categoryRepository.delete({ parentId: category.id });
 
       // create the new subcategories and assign the category's ID as their parentId
-      const subCategoryEntities = await Promise.all(
+      await Promise.all(
         subCategories.map((subCategoryName) =>
           this.categoryRepository.save(
             this.categoryRepository.create({

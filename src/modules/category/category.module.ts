@@ -11,6 +11,7 @@ import { UserModule } from '../user/user.module';
 import { VendorModule } from '../vendor/vendor.module';
 import { VendorService } from '../vendor/vendor.service';
 import { Vendor } from '../vendor/entities/vendor.entity';
+import { AbilityModule } from '../ability/ability.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { Vendor } from '../vendor/entities/vendor.entity';
     ItemModule,
     RequestModule,
     UserModule,
+    AbilityModule,
   ],
   controllers: [CategoryController],
   providers: [CategoryService],

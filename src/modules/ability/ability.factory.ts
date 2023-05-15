@@ -58,9 +58,7 @@ export class AbilityFactory {
     // Admin abilities
     if (user.role.name == UserRole.ADMIN) {
       can(Action.Create, [Item, Vendor, Category, Complaint, User]);
-      can(Action.Update, User, {
-        organizationId: user.organization.id,
-      });
+      can(Action.Update, [User, Category, Item, Vendor, Request, Complaint]);
       can(Action.Delete, [Item, Vendor, Category, Complaint]);
       can(Action.Read, [Organization, Item, Category, Complaint, User, Vendor]);
     }
@@ -73,13 +71,11 @@ export class AbilityFactory {
       can(Action.Update, [Complaint, Request], {
         organization: user.organization,
       });
-      cannot(Action.Update, User, {
-        id: { $ne: user.id },
-      }).because('You cannot update someone else');
+
       can(Action.Delete, [Complaint, Request], {
         organization: user.organization,
       });
-      can(Action.Read, [User, Item, Complaint, Request]);
+      can(Action.Read, [User, Item, Complaint, Request, Category]);
     }
 
     return build({

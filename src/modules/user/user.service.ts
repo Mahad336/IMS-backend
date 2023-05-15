@@ -3,6 +3,7 @@ import {
   Injectable,
   HttpException,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -29,7 +30,7 @@ export class UserService {
 
   async create(user: CreateUserDto, currUserRole, imageFile): Promise<User> {
     const newUserRole: any = currUserRole === UserRole.SUPER_ADMIN ? 2 : 3;
-    const image = await this.uploadFile(imageFile);
+    const image = imageFile ? await this.uploadFile(imageFile) : '';
     const genSalt = await bcrypt.genSalt();
     const newUser = this.userRepository.create({
       ...user,
@@ -41,7 +42,6 @@ export class UserService {
     });
 
     const savedUser = await this.userRepository.save(newUser);
-
     return savedUser;
   }
 
@@ -57,14 +57,16 @@ export class UserService {
     //   if (err instanceof ForbiddenError)
     //     throw new ForbiddenException(err.message);
     // }
-
     const user = req.user;
     switch (user?.role.name) {
       case UserRole.SUPER_ADMIN:
         return this.userRepository.find({ where: { role: { name: 'admin' } } });
       case UserRole.ADMIN:
         return this.userRepository.find({
-          where: { role: { name: 'employee' } },
+          where: {
+            role: { name: 'employee' },
+            organizationId: user.organizationId,
+          },
         });
       case UserRole.EMPLOYEE:
         return this.userRepository.findOne({ where: { id: req.user.id } });
@@ -76,8 +78,8 @@ export class UserService {
     }
   }
 
-  async findOne(id: number) {
-    return this.userRepository
+  async findOne(id: number, user: User): Promise<User> {
+    const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.organization', 'userorganization')
       .leftJoinAndSelect('user.item', 'useritem')
@@ -87,35 +89,131 @@ export class UserService {
       .leftJoinAndSelect('request.item', 'item')
       .leftJoinAndSelect('item.category', 'category')
       .leftJoinAndSelect('item.subcategory', 'subcategory')
-      .where('user.id = :id', { id })
-      .getOne();
+      .where('user.id = :id', { id });
+
+    switch (user.role.name) {
+      case UserRole.EMPLOYEE:
+        queryBuilder.andWhere('user.id = :userId', { userId: user.id });
+        break;
+      case UserRole.ADMIN:
+        queryBuilder
+          .leftJoin('user.role', 'role')
+          .andWhere(
+            'role.name = :employeeRole AND user.organizationId = :organizationId',
+            {
+              employeeRole: UserRole.EMPLOYEE,
+              organizationId: user.organizationId,
+            },
+          );
+        break;
+      case UserRole.SUPER_ADMIN:
+        queryBuilder
+          .leftJoin('user.role', 'role')
+          .andWhere('role.name = :adminRole', { adminRole: UserRole.ADMIN });
+        break;
+      default:
+        throw new UnauthorizedException(
+          'You are not authorized to access this user detail.',
+        );
+    }
+
+    const userDetail = await queryBuilder.getOne();
+
+    if (!userDetail) {
+      throw new UnauthorizedException(
+        'You are not authorized to access this user detail.',
+      );
+    }
+
+    return userDetail;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto, req: any, imageFile) {
-    const user = await this.userRepository.findOneByOrFail({ id });
-    if (!user) {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+    user: User,
+    imageFile,
+  ): Promise<User> {
+    const userDetail = await this.userRepository.findOneByOrFail({ id });
+
+    if (!userDetail) {
       throw new Error(`User with ID ${id} not found`);
     }
 
-    const image = imageFile ? await this.uploadFile(imageFile) : user.image;
+    if (user.role.name === UserRole.EMPLOYEE && userDetail.id !== user.id) {
+      throw new UnauthorizedException(
+        "You are not authorized to update other user's profile",
+      );
+    }
+
+    if (
+      user.role.name === UserRole.ADMIN &&
+      user.organizationId !== userDetail.organizationId
+    ) {
+      throw new UnauthorizedException(
+        'You are not authorized to update profiles of users outside your organization',
+      );
+    }
+
+    if (
+      user.role.name === UserRole.SUPER_ADMIN &&
+      userDetail.role.name === UserRole.SUPER_ADMIN
+    ) {
+      throw new UnauthorizedException(
+        'You are not authorized to update Super Admin profile',
+      );
+    }
+
+    const image = imageFile
+      ? await this.uploadFile(imageFile)
+      : userDetail.image;
     const genSalt = await bcrypt.genSalt();
 
-    const updatedUser = this.userRepository.merge(user, {
+    const updatedUser = this.userRepository.merge(userDetail, {
       ...updateUserDto,
       password: await bcrypt.hash(updateUserDto.password, genSalt),
       image,
     });
-    const result = await this.userRepository.update(id, updatedUser);
 
-    return result;
+    return this.userRepository.save(updatedUser);
   }
 
-  async remove(id: number) {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
+  async remove(id: number, user: User) {
+    const userDetail = await this.userRepository.findOneBy({ id });
+    if (!userDetail) {
       throw new Error(`User with ID ${id} not found`);
     }
+
+    switch (user.role.name) {
+      case UserRole.EMPLOYEE:
+        throw new UnauthorizedException(
+          'You are not authorized to delete users',
+        );
+      case UserRole.ADMIN:
+        if (user.organizationId !== userDetail.organizationId) {
+          throw new UnauthorizedException(
+            'You are not authorized to delete users from other organizations',
+          );
+        }
+        if (userDetail.role.name !== UserRole.EMPLOYEE) {
+          throw new UnauthorizedException(
+            'You are only authorized to delete employees',
+          );
+        }
+        break;
+      case UserRole.SUPER_ADMIN:
+        if (userDetail.role.name !== UserRole.ADMIN) {
+          throw new UnauthorizedException(
+            'You are only authorized to delete admins',
+          );
+        }
+        break;
+      default:
+        throw new UnauthorizedException('Not an authorized user');
+    }
+
     await this.userRepository.delete(id);
+
     return `User with ID ${id} has been deleted`;
   }
 

@@ -11,6 +11,7 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -47,12 +48,11 @@ export class UserController {
     if (errors.length > 0) return 'Send Accurate Data';
     await this.userValidator.validateCreateUserDto(createUserDto);
     const currUserRole = req.user.role.name;
-    const user = await this.userService.create(
+    return await this.userService.create(
       { ...createUserDto, organization },
       currUserRole,
       imageFile,
     );
-    return user;
   }
 
   @Get()
@@ -64,13 +64,16 @@ export class UserController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuardMiddleware)
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Read, subject: User })
+  @UseInterceptors(ClassSerializerInterceptor)
+  findOne(@Param('id') id: string, @Req() req) {
+    return this.userService.findOne(+id, req.user);
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuardMiddleware)
+  @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
+  @CheckAblities({ action: Action.Update, subject: User })
   @UseInterceptors(FileInterceptor('imageFile'))
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -79,16 +82,18 @@ export class UserController {
     @Req() req: any,
     @UploadedFile() imageFile,
   ) {
+    console.log(updateUserDto);
     return this.userService.update(
       +id,
       { ...updateUserDto, organization },
-      req,
+      req.user,
       imageFile,
     );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @UseGuards(AuthGuardMiddleware)
+  remove(@Param('id') id: string, @Req() req) {
+    return this.userService.remove(+id, req.user);
   }
 }

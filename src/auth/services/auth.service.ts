@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { generateToken } from 'src/common/utils/generateJWT';
+import { generateToken } from 'src/auth/utils/generateJWT';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -45,11 +49,9 @@ export class AuthService {
         html: `Your one-time password is <b>${otp}</b>. Please use this to reset your password.`,
       });
 
-      console.log(`Message sent to ${email}: ${info.messageId}`);
+      return `Message sent to ${email}: ${info.messageId}`;
     } catch (error) {
-      console.error(
-        `Failed to send reset password email to ${email}: ${error}`,
-      );
+      return `Failed to send reset password email to ${email}: ${error}`;
     }
   }
 
@@ -76,7 +78,7 @@ export class AuthService {
     const isOtpValid = await bcrypt.compare(otp, hashedOtp);
 
     if (!isOtpValid) {
-      throw new Error(`Invalid OTP`);
+      throw new UnauthorizedException('Inavlid Otp');
     }
 
     // generate a JWT token and return it
@@ -89,14 +91,13 @@ export class AuthService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new Error(`User with ID ${userId} not found`);
+      throw new UnauthorizedException(`User with ID ${userId} not found`);
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     const updatedUser = await this.userRepository.save(user);
 
-    console.log(`Password updated successfully for user with ID ${userId}`);
     user.passwordResetExpiration = null;
     user.passwordResetOtp = null;
     return updatedUser;
@@ -108,11 +109,21 @@ export class AuthService {
     const { email, password } = body;
 
     const userExists = await this.userRepository.findOneBy({ email });
-    if (userExists && (await bcrypt.compare(password, userExists.password))) {
-      const payload = { id: String(userExists.id), role: userExists.role };
-      const token = generateToken(payload, this.configService);
-      res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
-      return userExists;
+
+    if (!userExists) {
+      throw new NotFoundException('User with this email does not exist');
     }
+
+    const passwordMatch = await bcrypt.compare(password, userExists.password);
+
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    const payload = { id: String(userExists.id), role: userExists.role };
+    const token = generateToken(payload, this.configService);
+    res.cookie('jwt', token, { maxAge: 3 * 24 * 60 * 60 * 1000 });
+
+    return userExists;
   }
 }

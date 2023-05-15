@@ -16,6 +16,8 @@ export class TransformUserDataInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((data) => {
+        const users = Array.isArray(data) ? data : [data];
+
         if (Array.isArray(data)) {
           if (role === UserRole.SUPER_ADMIN) {
             return data.map((admin) => ({

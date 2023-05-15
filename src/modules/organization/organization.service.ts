@@ -18,7 +18,7 @@ export class OrganizationService {
     createOrganizationDto: CreateOrganizationDto,
     imageFile,
   ): Promise<Organization> {
-    const image = await this.uploadFile(imageFile);
+    const image = imageFile ? await this.uploadFile(imageFile) : '';
     const newOrganization = this.organizationRepository.create({
       ...createOrganizationDto,
       image,

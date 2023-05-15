@@ -56,6 +56,9 @@ export class Item {
   @JoinColumn({ name: 'vendor_id' })
   vendor: Vendor;
 
+  @Column()
+  organizationId: number;
+
   @ManyToOne(() => Organization, (organization) => organization.category)
   @JoinColumn({ name: 'organizationId' })
   organization: Organization;

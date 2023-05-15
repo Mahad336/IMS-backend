@@ -34,6 +34,7 @@ export class RequestController {
   @UseGuards(AuthGuardMiddleware, AbilitiesGuard)
   @CheckAblities({ action: Action.Create, subject: Complaint })
   create(@Body() createRequestDto: CreateRequestDto) {
+    console.log(createRequestDto);
     return this.requestService.create(createRequestDto);
   }
   @Get()
@@ -52,8 +53,9 @@ export class RequestController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.requestService.findOne(+id);
+  @UseGuards(AuthGuardMiddleware)
+  findOne(@Param('id') id: string, @Req() req) {
+    return this.requestService.findOne(+id, req.user);
   }
 
   @Patch(':id')

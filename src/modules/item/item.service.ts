@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
@@ -24,25 +24,50 @@ export class ItemService {
     });
   }
 
-  async findOne(id: number) {
-    return await this.itemRepository.findOne({
-      relations: ['assignedTo', 'vendor'],
+  async findOne(id: number, user: User) {
+    const item = await this.itemRepository.findOne({
+      relations: ['assignedTo', 'vendor', 'organization'],
       where: {
         id,
       },
     });
+    if (item.organization.id !== user.organizationId) {
+      throw new UnauthorizedException(
+        'You are not allowed to view detail of item other than your own organizaion',
+      );
+    }
+    return item;
   }
 
-  async update(id: number, updateItemDto: UpdateItemDto) {
-    const item = await this.itemRepository.findOneBy({ id });
+  async update(id: number, updateItemDto: UpdateItemDto, user: User) {
+    const item = await this.itemRepository.findOne({
+      relations: ['organization'],
+      where: { id },
+    });
+    if (item.organizationId !== user.organizationId) {
+      throw new UnauthorizedException(
+        'You are now allowed to update Item from other organization',
+      );
+    }
+
     if (!item) {
       throw new Error(`Item with ID ${id} not found`);
     }
+
     return await this.itemRepository.save({ ...item, ...updateItemDto });
   }
 
-  async remove(id: number) {
-    const item = await this.itemRepository.findOneBy({ id });
+  async remove(id: number, user: User) {
+    const item = await this.itemRepository.findOne({
+      relations: ['organization'],
+      where: { id },
+    });
+    if (item.organization.id !== user.organizationId) {
+      throw new UnauthorizedException(
+        'You are now allowed to delete Item from other organization',
+      );
+    }
+
     if (!item) {
       throw new Error(`Item with ID ${id} not found`);
     }
